@@ -3,3 +3,7 @@ __pycache__
 model_zoo
 models
 datasets
+KITTI
+pretrained-models
+newcrfs/__pycache__
+data_splits/split.txt

@@ -62,16 +62,17 @@ def get_num_lines(file_path):
 
 def test(params):
     """Test function."""
+    
     args.mode = 'test'
     dataloader = NewDataLoader(args, 'test')
     
     model = NewCRFDepth(version='large07', inv_depth=False, max_depth=args.max_depth)
     model = torch.nn.DataParallel(model)
     
-    checkpoint = torch.load(args.checkpoint_path)
+    checkpoint = torch.load(args.checkpoint_path, map_location=torch.device('cpu'))
     model.load_state_dict(checkpoint['model'])
     model.eval()
-    model.cuda()
+    #model.cuda()
 
     num_params = sum([np.prod(p.size()) for p in model.parameters()])
     print("Total number of parameters: {}".format(num_params))
@@ -87,8 +88,10 @@ def test(params):
     start_time = time.time()
     with torch.no_grad():
         for _, sample in enumerate(tqdm(dataloader.data)):
-            image = Variable(sample['image'].cuda())
+            #image = Variable(sample['image'].cuda())
+            image = Variable(sample['image'])
             # Predict
+            
             depth_est = model(image)
             post_process = True
             if post_process:
@@ -127,6 +130,7 @@ def test(params):
                 raise
     
     for s in tqdm(range(num_test_samples)):
+        print(args.dataset)
         if args.dataset == 'kitti':
             date_drive = lines[s].split('/')[1]
             filename_pred_png = save_name + '/raw/' + date_drive + '_' + lines[s].split()[0].split('/')[-1].replace(
@@ -178,4 +182,5 @@ def test(params):
 
 
 if __name__ == '__main__':
+    
     test(args)

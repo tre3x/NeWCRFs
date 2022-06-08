@@ -5,7 +5,7 @@ from torchvision import transforms
 
 import numpy as np
 from PIL import Image
-import os
+import os, cv2
 import random
 
 from utils import DistributedSamplerNoEvenlyDivisible
@@ -145,7 +145,7 @@ class DataLoadPreprocess(Dataset):
 
             image_path = os.path.join(data_path, "./" + sample_path.split()[0])
             image = np.asarray(Image.open(image_path), dtype=np.float32) / 255.0
-
+            image = cv2.resize(image, (1248, 384))
             if self.mode == 'online_eval':
                 gt_path = self.args.gt_path_eval
                 depth_path = os.path.join(gt_path, "./" + sample_path.split()[1])
