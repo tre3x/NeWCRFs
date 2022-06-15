@@ -39,7 +39,7 @@ parser.add_argument('--max_depth',                 type=float, help='maximum dep
 parser.add_argument('--log_directory',             type=str,   help='directory to save checkpoints and summaries', default='')
 parser.add_argument('--checkpoint_path',           type=str,   help='path to a checkpoint to load', default='')
 parser.add_argument('--log_freq',                  type=int,   help='Logging frequency in global steps', default=100)
-parser.add_argument('--save_freq',                 type=int,   help='Checkpoint saving frequency in global steps', default=5000)
+parser.add_argument('--save_freq',                 type=int,   help='Checkpoint saving frequency in global steps', default=100)
 
 # Training
 parser.add_argument('--weight_decay',              type=float, help='weight decay factor for optimization', default=1e-2)
@@ -94,10 +94,12 @@ elif args.dataset == 'kittipred':
 
 
 def online_eval(model, dataloader_eval, gpu, ngpus, post_process=False):
-    eval_measures = torch.zeros(10).cuda(device=gpu)
+    #eval_measures = torch.zeros(10).cuda(device=gpu)
+    eval_measures = torch.zeros(10)
     for _, eval_sample_batched in enumerate(tqdm(dataloader_eval.data)):
         with torch.no_grad():
-            image = torch.autograd.Variable(eval_sample_batched['image'].cuda(gpu, non_blocking=True))
+            #image = torch.autograd.Variable(eval_sample_batched['image'].cuda(gpu, non_blocking=True))
+            image = torch.autograd.Variable(eval_sample_batched['image'])
             gt_depth = eval_sample_batched['depth']
             has_valid_depth = eval_sample_batched['has_valid_depth']
             if not has_valid_depth:
@@ -145,7 +147,8 @@ def online_eval(model, dataloader_eval, gpu, ngpus, post_process=False):
 
         measures = compute_errors(gt_depth[valid_mask], pred_depth[valid_mask])
 
-        eval_measures[:9] += torch.tensor(measures).cuda(device=gpu)
+        #eval_measures[:9] += torch.tensor(measures).cuda(device=gpu)
+        eval_measures[:9] += torch.tensor(measures)
         eval_measures[9] += 1
 
     if args.multiprocessing_distributed:
@@ -194,15 +197,15 @@ def main_worker(gpu, ngpus_per_node, args):
     if args.distributed:
         if args.gpu is not None:
             torch.cuda.set_device(args.gpu)
-            model.cuda(args.gpu)
+            #model.cuda(args.gpu)
             args.batch_size = int(args.batch_size / ngpus_per_node)
             model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu], find_unused_parameters=True)
         else:
-            model.cuda()
+            #model.cuda()
             model = torch.nn.parallel.DistributedDataParallel(model, find_unused_parameters=True)
     else:
         model = torch.nn.DataParallel(model)
-        model.cuda()
+        #model.cuda()
 
     if args.distributed:
         print("== Model Initialized on GPU: {}".format(args.gpu))
@@ -290,9 +293,11 @@ def main_worker(gpu, ngpus_per_node, args):
             optimizer.zero_grad()
             before_op_time = time.time()
 
-            image = torch.autograd.Variable(sample_batched['image'].cuda(args.gpu, non_blocking=True))
-            depth_gt = torch.autograd.Variable(sample_batched['depth'].cuda(args.gpu, non_blocking=True))
-
+            #image = torch.autograd.Variable(sample_batched['image'].cuda(args.gpu, non_blocking=True))
+            image = torch.autograd.Variable(sample_batched['image'])
+            #depth_gt = torch.autograd.Variable(sample_batched['depth'].cuda(args.gpu, non_blocking=True))
+            depth_gt = torch.autograd.Variable(sample_batched['depth'])
+            print(sample_batched.keys())
             depth_est = model(image)
 
             if args.dataset == 'nyu':

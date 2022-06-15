@@ -7,3 +7,5 @@ KITTI
 pretrained-models
 newcrfs/__pycache__
 data_splits/split.txt
+data_splits
+configs

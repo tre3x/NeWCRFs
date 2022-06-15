@@ -94,7 +94,6 @@ class DataLoadPreprocess(Dataset):
 
             image_path = os.path.join(self.args.data_path, rgb_file)
             depth_path = os.path.join(self.args.gt_path, depth_file)
-    
             image = Image.open(image_path)
             depth_gt = Image.open(depth_path)
             
@@ -143,12 +142,13 @@ class DataLoadPreprocess(Dataset):
             else:
                 data_path = self.args.data_path
 
-            image_path = os.path.join(data_path, "./" + sample_path.split()[0])
+            image_path = os.path.join(data_path, "./" + '/'.join(sample_path.split()[0].split('/')[-2:]))
+
             image = np.asarray(Image.open(image_path), dtype=np.float32) / 255.0
-            image = cv2.resize(image, (1248, 384))
+            #image = cv2.resize(image, (1248, 384))
             if self.mode == 'online_eval':
                 gt_path = self.args.gt_path_eval
-                depth_path = os.path.join(gt_path, "./" + sample_path.split()[1])
+                depth_path = os.path.join(gt_path, "./" + '/'.join(sample_path.split()[1].split('/')[-2:]))
                 if self.args.dataset == 'kitti':
                     depth_path = os.path.join(gt_path, sample_path.split()[0].split('/')[0], sample_path.split()[1])
                 has_valid_depth = False
