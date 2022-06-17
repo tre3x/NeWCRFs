@@ -123,9 +123,11 @@ class DataLoadPreprocess(Dataset):
                 depth_gt = self.rotate_image(depth_gt, random_angle, flag=Image.NEAREST)
             
             image = np.asarray(image, dtype=np.float32) / 255.0
+            image = cv2.resize(image, (640, 480))
             depth_gt = np.asarray(depth_gt, dtype=np.float32)
+            depth_gt = cv2.resize(depth_gt, (640, 480))
             depth_gt = np.expand_dims(depth_gt, axis=2)
-
+            
             if self.args.dataset == 'nyu':
                 depth_gt = depth_gt / 1000.0
             else:
@@ -145,7 +147,7 @@ class DataLoadPreprocess(Dataset):
             image_path = os.path.join(data_path, "./" + '/'.join(sample_path.split()[0].split('/')[-2:]))
 
             image = np.asarray(Image.open(image_path), dtype=np.float32) / 255.0
-            #image = cv2.resize(image, (1248, 384))
+            image = cv2.resize(image, (640, 480))
             if self.mode == 'online_eval':
                 gt_path = self.args.gt_path_eval
                 depth_path = os.path.join(gt_path, "./" + '/'.join(sample_path.split()[1].split('/')[-2:]))
@@ -161,6 +163,7 @@ class DataLoadPreprocess(Dataset):
 
                 if has_valid_depth:
                     depth_gt = np.asarray(depth_gt, dtype=np.float32)
+                    depth_gt = cv2.resize(depth_gt, (640, 480))
                     depth_gt = np.expand_dims(depth_gt, axis=2)
                     if self.args.dataset == 'nyu':
                         depth_gt = depth_gt / 1000.0

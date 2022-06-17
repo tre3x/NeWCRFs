@@ -59,10 +59,12 @@ elif args.dataset == 'kittipred':
 
 
 def eval(model, dataloader_eval, post_process=False):
-    eval_measures = torch.zeros(10).cuda()
+    #eval_measures = torch.zeros(10).cuda()
+    eval_measures = torch.zeros(10)
     for _, eval_sample_batched in enumerate(tqdm(dataloader_eval.data)):
         with torch.no_grad():
-            image = torch.autograd.Variable(eval_sample_batched['image'].cuda())
+            #image = torch.autograd.Variable(eval_sample_batched['image'].cuda())
+            image = torch.autograd.Variable(eval_sample_batched['image'])
             gt_depth = eval_sample_batched['depth']
             has_valid_depth = eval_sample_batched['has_valid_depth']
             if not has_valid_depth:
@@ -110,7 +112,8 @@ def eval(model, dataloader_eval, post_process=False):
 
         measures = compute_errors(gt_depth[valid_mask], pred_depth[valid_mask])
 
-        eval_measures[:9] += torch.tensor(measures).cuda()
+        #eval_measures[:9] += torch.tensor(measures).cuda()
+        eval_measures[:9] += torch.tensor(measures)
         eval_measures[9] += 1
 
     eval_measures_cpu = eval_measures.cpu()
@@ -139,8 +142,7 @@ def main_worker(args):
     print("== Total number of learning parameters: {}".format(num_params_update))
 
     model = torch.nn.DataParallel(model)
-    model.cuda()
-
+    #model.cuda()
     print("== Model Initialized")
 
     if args.checkpoint_path != '':

@@ -105,13 +105,12 @@ def online_eval(model, dataloader_eval, gpu, ngpus, post_process=False):
             if not has_valid_depth:
                 # print('Invalid depth. continue.')
                 continue
-
             pred_depth = model(image)
             if post_process:
                 image_flipped = flip_lr(image)
                 pred_depth_flipped = model(image_flipped)
                 pred_depth = post_process_depth(pred_depth, pred_depth_flipped)
-
+            
             pred_depth = pred_depth.cpu().numpy().squeeze()
             gt_depth = gt_depth.cpu().numpy().squeeze()
 
